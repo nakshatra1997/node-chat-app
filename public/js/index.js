@@ -6,11 +6,7 @@
 			to:'hee@gmil.com',
 			text:'hello'
 		});
-		socket.emit('createMessage',{
-          from:'host@gmail.com',
-          text:'hey i am client',
-          createdAt:'12345'
-		});
+	
 	});
 	socket.on('newMessage',function (message){
 		console.log('your message is',message);

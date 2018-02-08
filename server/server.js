@@ -20,18 +20,18 @@ io.on('connection',(socket)=>{
 		text:'heyy np'
 	});
 
-	socket.emit('newMessage',{
-	from:'au@gmail.com',
-	text:'hello i am server',
-	createdAt:'1234'
-	});
-
 	socket.on('createEmail',(newEmail)=>{
       console.log('create a mail',newEmail);
 	});
 
 	socket.on('createMessage',(message)=>{
       console.log('message to be created is',message);
+	  //io.emit will be used for every single user which is connected to network
+	  io.emit('newMessage',{
+	  	from:message.from,
+	  	text:message.text,
+	  	createdAt:new Date().getTime()
+	  });
 	});
 	
 	socket.on('disconnect',()=>{
