@@ -14,11 +14,17 @@ app.use(express.static(publicPath));
 io.on('connection',(socket)=>{
 	console.log('new user connected');
 
-	socket.emit('newEmail',{
+	socket.emit('newMessage',{
 		//object to send custom data
-		from:'np@gmail.com',
-		text:'heyy np'
+		from:'admin',
+		text:'welcome to the chat app',
+		createdAt: new Date().getTime()
 	});
+    socket.broadcast.emit('newMessage',{
+    	from:'admin',
+		text:'new user joined',
+		createdAt: new Date().getTime()
+    });
 
 	socket.on('createEmail',(newEmail)=>{
       console.log('create a mail',newEmail);
@@ -32,6 +38,11 @@ io.on('connection',(socket)=>{
 	  	text:message.text,
 	  	createdAt:new Date().getTime()
 	  });
+	  // socket.broadcast.emit('newMessage',{
+	  // 	from:message.from,
+	  // 	text:message.text,
+	  // 	createdAt:new Date().getTime()
+	  // });
 	});
 	
 	socket.on('disconnect',()=>{
