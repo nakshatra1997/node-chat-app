@@ -1,7 +1,7 @@
 const path=require('path');
 const http=require('http');
 
-const {generateMessage}=require('./utils/message');
+const {generateMessage,generateLocationMessage}=require('./utils/message');
 const publicPath=path.join(__dirname,'../public');
 
 const socketIO=require('socket.io');
@@ -40,7 +40,7 @@ io.on('connection',(socket)=>{
 	
 	//for geolocation
 	socket.on('createLocationMessage',(coords)=>{
-       io.emit('newMessage',generateMessage('admin',`${coords.latitude},${coords.longitude}`));
+       io.emit('newLocationMessage',generateLocationMessage('admin',coords.latitude,coords.longitude));
 	});
 	
 	socket.on('disconnect',()=>{
