@@ -38,6 +38,11 @@ io.on('connection',(socket)=>{
 	  callback("this is from the server");
 	});
 	
+	//for geolocation
+	socket.on('createLocationMessage',(coords)=>{
+       io.emit('newMessage',generateMessage('admin',`${coords.latitude},${coords.longitude}`));
+	});
+	
 	socket.on('disconnect',()=>{
 		console.log('user was disconnected from server');
 	});
