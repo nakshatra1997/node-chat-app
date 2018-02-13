@@ -24,3 +24,4 @@ describe('generateLocationMessage',()=>{
 	// 	expect.objectContaining({from,url});
 	// });
 });
+});
