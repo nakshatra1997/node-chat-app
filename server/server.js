@@ -4,6 +4,7 @@ const http=require('http');
 const {generateMessage,generateLocationMessage}=require('./utils/message');
 const {isRealString}=require('./utils/validation');
 const publicPath=path.join(__dirname,'../public');
+const {Users}=require('./utils/users');
 
 const socketIO=require('socket.io');
 const express=require('express');
@@ -11,6 +12,7 @@ const port=process.env.PORT||3000;
 var app= express();
 var server=http.createServer(app);
 var io=socketIO(server);
+var users=new Users();
 
 app.use(express.static(publicPath));
 io.on('connection',(socket)=>{
@@ -18,10 +20,13 @@ io.on('connection',(socket)=>{
     socket.on('join',(params,callback)=>{
        if(!isRealString(params.name)|| !isRealString(params.name))
        {
-          callback('name and room name are required');
+          return callback('name and room name are required');
        }
        socket.join(params.room);
-
+       users.removeUser(socket.id);
+       users.addUser(socket.id,params.name,params.room);
+       //now we will use io.to().emit //so that the users list get updated in the room
+       io.to(params.room).emit('updateUserList',users.getUserList(params.room));
        //io.emit --->io.to('the office fans').emit,
        //socket.broadcast.emit -->socket.broadcast.io('the office fans').emit
        //socket.emit
@@ -40,9 +45,14 @@ io.on('connection',(socket)=>{
 	// });
 
 	socket.on('createMessage',(message,callback)=>{
-      console.log('create message',message);
+      // console.log('create message',message);
+      var user=users.getUser(socket.id);
+      if(user&& isRealString(message.text))
+      {
+        io.to(user[0].room).emit('newMessage',generateMessage(user[0].name,message.text));;
+      }
 	  //io.emit will be used for every single user which is connected to network
-	  io.emit('newMessage',generateMessage(message.from,message.text));
+	 
 	  // socket.broadcast.emit('newMessage',{
 	  // 	from:message.from,
 	  // 	text:message.text,
@@ -53,15 +63,25 @@ io.on('connection',(socket)=>{
 	
 	//for geolocation
 	socket.on('createLocationMessage',(coords)=>{
-       io.emit('newLocationMessage',generateLocationMessage('admin',coords.latitude,coords.longitude));
+		var user=users.getUser(socket.id);
+		if(user)
+		{
+           io.to(user[0].room).emit('newLocationMessage',generateLocationMessage(user[0].name,coords.latitude,coords.longitude));
+		}
+       
 	});
 	
 	socket.on('disconnect',()=>{
-		console.log('user was disconnected from server');
+		
+      var user=users.removeUser(socket.id);
+      if(user)
+      {
+        io.to(user[0].room).emit('updateUserList',users.getUserList(user[0].room));
+        io.to(user[0].room).emit('newMessage',generateMessage('Admin',`${user[0].name} has left.`));
+      }
+		//io.to().emit to emit event to every single person
+
 	});
-
-
-	
 });
 
 
